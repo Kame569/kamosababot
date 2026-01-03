@@ -1,6 +1,0 @@
-{
-    "web_enabled": true,
-    "host": "0.0.0.0",
-    "port": 8080,
-    "web_admin_password": "admin"
-}
