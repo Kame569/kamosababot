@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>チケットシステム構成</h1>
+<div class="card">
+    <h3><i class="fas fa-list"></i> パネル一覧</h3>
+    <table class="panel-table">
+        <thead>
+            <tr><th>パネル名</th><th>カテゴリ</th><th>スレッド使用</th><th>操作</th></tr>
+        </thead>
+        <tbody>
+            {% for p in cfg.ticket.panels %}
+            <tr>
+                <td>{{ p.panel_name }}</td>
+                <td>{{ p.category_id or "未設定" }}</td>
+                <td>{{ "YES" if p.use_thread else "NO" }}</td>
+                <td><button class="btn sm">編集</button></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="form-group" style="margin-top: 20px;">
+        <label>スタッフロール (管理者ロール)</label>
+        <select class="input" multiple id="staff_roles">
+            {% for r in roles %}
+            <option value="{{ r.id }}" {% if r.id in cfg.ticket.staff_roles %}selected{% endif %}>{{ r.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <button class="btn large" onclick="alert('保存機能はAPI連携が必要です')">変更内容を保存</button>
+</div>
+{% endblock %}

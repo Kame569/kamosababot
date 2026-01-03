@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="settings-wrap">
+    <h1>入退室通知設定</h1>
+    
+    <div class="tab-nav">
+        <button class="t-btn active" onclick="showTab('join')">Join (入室)</button>
+        <button class="t-btn" onclick="showTab('leave')">Leave (退室)</button>
+    </div>
+
+    <div id="join" class="tab-content active">
+        <div class="card">
+            <label>通知チャンネル</label>
+            <select id="channel_join" class="input">
+                {% for ch in channels %}
+                <option value="{{ ch.id }}" {% if cfg.jl.channel_join == ch.id %}selected{% endif %}>#{{ ch.name }}</option>
+                {% endfor %}
+            </select>
+            <label>タイトル</label>
+            <input type="text" id="j_title" class="input" value="{{ cfg.jl.join_embed.title }}">
+            <label>本文</label>
+            <textarea id="j_desc" class="input" rows="5">{{ cfg.jl.join_embed.description }}</textarea>
+        </div>
+    </div>
+
+    <div id="leave" class="tab-content">
+        <div class="card">
+            <label>通知チャンネル</label>
+            <select id="channel_leave" class="input">
+                {% for ch in channels %}
+                <option value="{{ ch.id }}" {% if cfg.jl.channel_leave == ch.id %}selected{% endif %}>#{{ ch.name }}</option>
+                {% endfor %}
+            </select>
+            <label>本文</label>
+            <textarea id="l_desc" class="input" rows="5">{{ cfg.jl.leave_embed.description }}</textarea>
+        </div>
+    </div>
+
+    <button class="btn large" onclick="saveSettings('{{ guild.id }}')">設定を保存</button>
+</div>
+
+<script>
+function showTab(id) {
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.currentTarget.classList.add('active');
+}
+</script>
+{% endblock %}

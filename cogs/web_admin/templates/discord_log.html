@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { background-color: #313338; color: #dcdee1; font-family: sans-serif; padding: 20px; }
+        .channel-name { font-size: 20px; font-weight: bold; border-bottom: 1px solid #3f4147; padding-bottom: 10px; margin-bottom: 20px; }
+        .message { display: flex; margin-bottom: 16px; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; margin-right: 16px; }
+        .content-wrap { display: flex; flex-direction: column; }
+        .header { display: flex; align-items: baseline; }
+        .author { font-weight: 500; color: #ffffff; margin-right: 8px; }
+        .time { font-size: 12px; color: #949ba4; }
+        .text { margin-top: 4px; line-height: 1.375rem; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <div class="channel-name"># {{ channel_name }}</div>
+    {% for m in messages %}
+    <div class="message">
+        <img src="{{ m.author_avatar }}" class="avatar">
+        <div class="content-wrap">
+            <div class="header">
+                <span class="author">{{ m.author }}</span>
+                <span class="time">{{ m.timestamp }}</span>
+            </div>
+            <div class="text">{{ m.content }}</div>
+        </div>
+    </div>
+    {% endfor %}
+</body>
+</html>

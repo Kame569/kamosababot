@@ -1,0 +1,16 @@
+{
+    "features": {
+        "join_leave": true,
+        "ticket": true,
+        "ranking": true
+    },
+    "join_leave": {
+        "channel_id": "1233064667790704643",
+        "join_msg": "Welcome {user}!",
+        "leave_msg": "Goodbye {user}!"
+    },
+    "ticket": {
+        "category_id": "1240528323080355860",
+        "staff_role_id": "1456975110001917976"
+    }
+}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>ランキング (XP) 設定</h1>
+<div class="card">
+    <div class="form-group">
+        <label>機能の有効化</label>
+        <input type="checkbox" {% if cfg.rank.enabled %}checked{% endif %}>
+    </div>
+    
+    <label>XP獲得クールダウン (秒)</label>
+    <input type="number" class="input" value="{{ cfg.rank.cooldown }}">
+
+    <label>レベルアップ計算式</label>
+    <input type="text" class="input" value="{{ cfg.rank.formula }}">
+    <p class="hint">例: level * 100</p>
+
+    <button class="btn large" onclick="alert('Saving...')">ランキング設定を保存</button>
+</div>
+{% endblock %}

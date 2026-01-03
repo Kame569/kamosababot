@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>管理サーバーを選択</h1>
+<div class="guild-grid">
+    {% for g in guilds %}
+    <a href="/guild/{{ g.id }}" class="guild-card">
+        <div class="guild-icon-wrap">
+            <img src="{{ g.icon }}" alt="icon">
+        </div>
+        <div class="guild-info">
+            <h3>{{ g.name }}</h3>
+            <p><i class="fas fa-users"></i> {{ g.members }} members</p>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endblock %}

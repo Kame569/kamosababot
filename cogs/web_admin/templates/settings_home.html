@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<h1><i class="fas fa-door-open"></i> Join / Leave 通知設定</h1>
+<div class="card floating">
+    <div class="form-group">
+        <label>機能の有効化</label>
+        <input type="checkbox" id="jl_enabled" {% if cfg.jl.enabled %}checked{% endif %}>
+    </div>
+    
+    <h3><i class="fas fa-sign-in-alt"></i> 入室通知 (Join)</h3>
+    <div class="form-group">
+        <label>通知チャンネル</label>
+        <select id="channel_join" class="input">
+            {% for ch in channels %}
+            <option value="{{ ch.id }}" {% if cfg.jl.channel_join == ch.id %}selected{% endif %}>#{{ ch.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Embed タイトル</label>
+        <input type="text" id="j_title" class="input" value="{{ cfg.jl.join_embed.title }}">
+    </div>
+    <div class="form-group">
+        <label>Embed 本文</label>
+        <textarea id="j_desc" class="input">{{ cfg.jl.join_embed.description }}</textarea>
+    </div>
+
+    <hr>
+
+    <h3><i class="fas fa-sign-out-alt"></i> 退室通知 (Leave)</h3>
+    <div class="form-group">
+        <label>通知チャンネル</label>
+        <select id="channel_leave" class="input">
+            {% for ch in channels %}
+            <option value="{{ ch.id }}" {% if cfg.jl.channel_leave == ch.id %}selected{% endif %}>#{{ ch.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <button class="btn large" onclick="saveJL('{{ guild.id }}')"><i class="fas fa-save"></i> 設定を保存</button>
+</div>
+{% endblock %}
