@@ -1,0 +1,13 @@
+{
+    "ticket_system_id": "000001",
+    "guild_id": 1233064665907728396,
+    "creator_id": 843163055101444117,
+    "category": "test",
+    "content": "tet",
+    "channel_id": 1456976676121612424,
+    "thread_id": null,
+    "status": "closed",
+    "created_at": 1767440709,
+    "closed_at": 1767440717,
+    "staff_ids": []
+}
