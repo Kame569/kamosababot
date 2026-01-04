@@ -1,16 +1,26 @@
 import logging
+from discord.ext import commands
 from .manager import WebManager
 
-logger = logging.getLogger("WebAdmin.Init")
+logger = logging.getLogger("WebAdmin")
 
-async def setup(bot):
-    logger.info("Initializing web_admin extension...")
-    try:
-        cog = WebManager(bot)
-        await bot.add_cog(cog)
-        # Webサーバーの起動メソッドを確実に呼び出す
-        await cog.start_web_server()
-        logger.info("web_admin setup complete.")
-    except Exception as e:
-        logger.error(f"Error during web_admin setup: {e}", exc_info=True)
-        raise e
+
+async def setup(bot: commands.Bot):
+    cog = WebManager(bot)
+    await bot.add_cog(cog)
+
+    if not hasattr(bot, "web_started"):
+        bot.web_started = False
+
+    if not bot.web_started:
+        bot.web_started = True
+
+        async def _starter():
+            await bot.wait_until_ready()
+            try:
+                await cog.start_web_server()
+                logger.info("[WEB] started")
+            except Exception:
+                logger.exception("[WEB] failed to start")
+
+        bot.loop.create_task(_starter())

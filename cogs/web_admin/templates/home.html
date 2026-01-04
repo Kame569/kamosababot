@@ -1,17 +1,76 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>管理サーバーを選択</h1>
-<div class="guild-grid">
-    {% for g in guilds %}
-    <a href="/guild/{{ g.id }}" class="guild-card">
-        <div class="guild-icon-wrap">
-            <img src="{{ g.icon }}" alt="icon">
-        </div>
-        <div class="guild-info">
-            <h3>{{ g.name }}</h3>
-            <p><i class="fas fa-users"></i> {{ g.members }} members</p>
-        </div>
-    </a>
-    {% endfor %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">サーバー一覧</h1>
+    <p class="page-desc">管理するサーバーを選択してください。</p>
+  </div>
 </div>
+
+{% if not guilds %}
+  <div class="glass-card">
+    <p style="margin:0; color:var(--muted);">
+      サーバーが見つかりません。Botがサーバーに参加しているか確認してください。
+    </p>
+  </div>
+{% else %}
+  <div class="servers-grid">
+    {% for g in guilds %}
+      <a class="server-card" href="/guild/{{ g['id'] }}">
+        <div class="server-icon">
+          <img src="{{ g['icon'] }}" alt="icon">
+        </div>
+        <div class="server-meta">
+          <div class="server-name">{{ g['name'] }}</div>
+          <div class="server-sub">{{ g['members'] }} members</div>
+        </div>
+        <div class="server-go"><i class="fas fa-chevron-right"></i></div>
+      </a>
+    {% endfor %}
+  </div>
+
+  <style>
+    .servers-grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .server-card{
+      grid-column: span 6;
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      padding: 14px;
+      border-radius: var(--radius);
+      text-decoration:none;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.10);
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+    }
+    .server-card:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(109,124,255,0.30);
+    }
+    .server-icon{
+      width: 44px; height: 44px;
+      border-radius: 14px;
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.20);
+      flex: 0 0 auto;
+    }
+    .server-icon img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .server-meta{ flex: 1; min-width: 0; }
+    .server-name{ font-weight: 900; white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
+    .server-sub{ font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .server-go{ color: rgba(255,255,255,0.55); }
+    @media (max-width: 980px){
+      .server-card{ grid-column: span 12; }
+    }
+  </style>
+{% endif %}
+
 {% endblock %}

@@ -1,33 +1,245 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>チケットシステム構成</h1>
-<div class="card">
-    <h3><i class="fas fa-list"></i> パネル一覧</h3>
-    <table class="panel-table">
-        <thead>
-            <tr><th>パネル名</th><th>カテゴリ</th><th>スレッド使用</th><th>操作</th></tr>
-        </thead>
-        <tbody>
-            {% for p in cfg.ticket.panels %}
-            <tr>
-                <td>{{ p.panel_name }}</td>
-                <td>{{ p.category_id or "未設定" }}</td>
-                <td>{{ "YES" if p.use_thread else "NO" }}</td>
-                <td><button class="btn sm">編集</button></td>
-            </tr>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Ticket System 設定</h1>
+    <p class="page-desc">パネルごとに挙動・権限・フォーム・クローズ運用を設定できます。</p>
+  </div>
+  <div class="header-actions">
+    <button class="btn ghost" onclick="ticketCreatePanel('{{ guild.id }}')">＋ パネル追加</button>
+  </div>
+</div>
+
+<div class="glass-card">
+  <div class="tab-row">
+    {% for p in panels %}
+      <a class="tab {% if loop.index0 == panel_index %}active{% endif %}"
+         href="/guild/{{ guild.id }}/settings/ticket?panel={{ loop.index0 }}">
+        {{ loop.index0 }}: {{ p.panel_name }}
+      </a>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="glass-card">
+    <h3 class="section-title">🧩 基本</h3>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>パネル名</label>
+        <input id="p_panel_name" class="input" value="{{ panel.panel_name }}">
+        <div class="help">一覧タブに表示される名前。</div>
+      </div>
+
+      <div class="field">
+        <label>有効化</label>
+        <label class="switch">
+          <input id="p_enabled" type="checkbox" {% if panel.enabled %}checked{% endif %}>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="field">
+        <label>作成方式</label>
+        <div class="seg">
+          <button class="seg-btn {% if panel.mode=='channel' %}active{% endif %}" onclick="setSeg('p_mode','channel', this)">専用チャンネル</button>
+          <button class="seg-btn {% if panel.mode=='thread' %}active{% endif %}" onclick="setSeg('p_mode','thread', this)">プライベートスレッド</button>
+        </div>
+        <input id="p_mode" type="hidden" value="{{ panel.mode }}">
+        <div class="help">チケットごとにチャンネル生成 or プライベートスレッド。</div>
+      </div>
+
+      <div class="field">
+        <label>チャンネル名テンプレ</label>
+        <input id="p_name_template" class="input" value="{{ panel.name_template }}">
+        <div class="help">{user} {user_id} {created_at} {count} が使えます。</div>
+      </div>
+
+      <div class="field">
+        <label>作成先カテゴリ（専用チャンネル時）</label>
+        <div class="select-wrap">
+          <select id="p_parent_category_id" class="select">
+            <option value="">(未指定)</option>
+            {% for c in categories %}
+              <option value="{{ c.id }}" {% if panel.parent_category_id|string == c.id %}selected{% endif %}>{{ c.name }}</option>
             {% endfor %}
-        </tbody>
-    </table>
-    
-    <div class="form-group" style="margin-top: 20px;">
-        <label>スタッフロール (管理者ロール)</label>
-        <select class="input" multiple id="staff_roles">
-            {% for r in roles %}
-            <option value="{{ r.id }}" {% if r.id in cfg.ticket.staff_roles %}selected{% endif %}>{{ r.name }}</option>
+          </select>
+          <span class="chev">▾</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>親チャンネル（スレッド時）</label>
+        <div class="select-wrap">
+          <select id="p_thread_parent_channel_id" class="select">
+            <option value="">(未指定)</option>
+            {% for ch in channels %}
+              <option value="{{ ch.id }}" {% if panel.thread_parent_channel_id|string == ch.id %}selected{% endif %}>#{{ ch.name }}</option>
             {% endfor %}
-        </select>
+          </select>
+          <span class="chev">▾</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>種別（複数）</label>
+        <input id="p_types" class="input" value="{{ panel.types | join(',') }}">
+        <div class="help">例: 質問,不具合,申請,通報（カンマ区切り）</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="glass-card">
+    <h3 class="section-title">🧑‍💼 権限 / 制限</h3>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>STAFFロール（複数）</label>
+        <div class="multi" id="p_staff_roles"></div>
+        <div class="help">作成者＋STAFFのみ閲覧権限。</div>
+      </div>
+
+      <div class="field">
+        <label>閲覧可能ロール（チケット内で追加用）</label>
+        <div class="multi" id="p_viewer_roles"></div>
+      </div>
+
+      <div class="field">
+        <label>同時に持てるチケット数</label>
+        <input id="p_max_open" type="number" class="input" min="1" max="20" value="{{ panel.limits.max_open_per_user }}">
+      </div>
+
+      <div class="field">
+        <label>連続作成クールダウン（分）</label>
+        <input id="p_cooldown" type="number" class="input" min="0" max="1440" value="{{ panel.limits.cooldown_minutes }}">
+      </div>
+
+      <div class="field">
+        <label>無言削除（最後のメッセージから）</label>
+        <label class="switch">
+          <input id="p_inactive_enabled" type="checkbox" {% if panel.auto_delete.enabled %}checked{% endif %}>
+          <span class="slider"></span>
+        </label>
+        <div class="help">ONの場合、指定分経過でチケットを削除（Web用HTML生成なし）。</div>
+      </div>
+
+      <div class="field">
+        <label>無言削除まで（分）</label>
+        <input id="p_inactive_minutes" type="number" class="input" min="0" max="100000" value="{{ panel.auto_delete.inactive_minutes }}">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="glass-card">
+  <h3 class="section-title">📝 フォーム / テンプレ / ルール</h3>
+
+  <div class="form-grid">
+    <div class="field">
+      <label>Modalフォーム（ジャンル/本文/緊急度）</label>
+      <label class="switch">
+        <input id="p_modal_enabled" type="checkbox" {% if panel.modal.enabled %}checked{% endif %}>
+        <span class="slider"></span>
+      </label>
     </div>
 
-    <button class="btn large" onclick="alert('保存機能はAPI連携が必要です')">変更内容を保存</button>
+    <div class="field">
+      <label>フォームラベル（任意）</label>
+      <div class="form-grid">
+        <div class="field">
+          <label>ジャンル</label>
+          <input id="p_label_type" class="input" value="{{ panel.modal.labels.type }}">
+        </div>
+        <div class="field">
+          <label>本文</label>
+          <input id="p_label_body" class="input" value="{{ panel.modal.labels.body }}">
+        </div>
+        <div class="field">
+          <label>緊急度</label>
+          <input id="p_label_urgency" class="input" value="{{ panel.modal.labels.urgency }}">
+        </div>
+        <div class="field">
+          <label>参考画像URL</label>
+          <input id="p_label_image" class="input" value="{{ panel.modal.labels.image }}">
+        </div>
+      </div>
+      <div class="help">参考画像は “URL入力” として受け付けます（Discord Modalはファイル添付できないため）。</div>
+    </div>
+
+    <div class="field">
+      <label>作成時テンプレメッセージ（Embed）</label>
+      <textarea id="p_open_desc" class="textarea" rows="5">{{ panel.open_message.embed.description }}</textarea>
+      <div class="help">変数: {type} {urgency} {body} {user} {user_id} {created_at} {count}</div>
+    </div>
+
+    <div class="field">
+      <label>ルール/注意事項（Embed）</label>
+      <textarea id="p_rules_desc" class="textarea" rows="5">{{ panel.rules_embed.description }}</textarea>
+    </div>
+  </div>
 </div>
+
+<div class="glass-card">
+  <h3 class="section-title">🧯 クローズ運用</h3>
+
+  <div class="form-grid">
+    <div class="field">
+      <label>クローズ確認ボタン必須</label>
+      <label class="switch">
+        <input id="p_close_confirm" type="checkbox" {% if panel.close.confirm_required %}checked{% endif %}>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="field">
+      <label>クローズカテゴリ（あれば移動 / なければ削除）</label>
+      <div class="select-wrap">
+        <select id="p_closed_category_id" class="select">
+          <option value="">(未指定＝削除)</option>
+          {% for c in categories %}
+            <option value="{{ c.id }}" {% if panel.close.closed_category_id|string == c.id %}selected{% endif %}>{{ c.name }}</option>
+          {% endfor %}
+        </select>
+        <span class="chev">▾</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>再オープン許可</label>
+      <label class="switch">
+        <input id="p_allow_reopen" type="checkbox" {% if panel.close.allow_reopen %}checked{% endif %}>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="field">
+      <label>closed から削除まで（日）</label>
+      <input id="p_delete_after_days" type="number" class="input" min="1" max="365" value="{{ panel.close.delete_after_days }}">
+      <div class="help">要件: 2週間後に削除 → デフォ 14。</div>
+    </div>
+  </div>
+</div>
+
+<div class="glass-card">
+  <div class="actions-row">
+    <div class="left">
+      <button class="btn" onclick="ticketSavePanel('{{ guild.id }}', {{ panel_index }})">保存</button>
+      <button class="btn primary" onclick="ticketDeployPanel('{{ guild.id }}', {{ panel_index }})">Discordに設置</button>
+    </div>
+    <div class="right">
+      {% if panel_index > 0 %}
+      <button class="btn danger" onclick="ticketDeletePanel('{{ guild.id }}', {{ panel_index }})">このパネルを削除（設置済みメッセージも削除）</button>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  // roles list from server
+  window.__ROLES__ = {{ roles | tojson }};
+  window.__PANEL__ = {{ panel | tojson }};
+</script>
+
 {% endblock %}

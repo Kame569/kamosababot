@@ -1,50 +1,145 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="settings-wrap">
-    <h1>入退室通知設定</h1>
-    
-    <div class="tab-nav">
-        <button class="t-btn active" onclick="showTab('join')">Join (入室)</button>
-        <button class="t-btn" onclick="showTab('leave')">Leave (退室)</button>
-    </div>
 
-    <div id="join" class="tab-content active">
-        <div class="card">
-            <label>通知チャンネル</label>
-            <select id="channel_join" class="input">
-                {% for ch in channels %}
-                <option value="{{ ch.id }}" {% if cfg.jl.channel_join == ch.id %}selected{% endif %}>#{{ ch.name }}</option>
-                {% endfor %}
-            </select>
-            <label>タイトル</label>
-            <input type="text" id="j_title" class="input" value="{{ cfg.jl.join_embed.title }}">
-            <label>本文</label>
-            <textarea id="j_desc" class="input" rows="5">{{ cfg.jl.join_embed.description }}</textarea>
-        </div>
-    </div>
-
-    <div id="leave" class="tab-content">
-        <div class="card">
-            <label>通知チャンネル</label>
-            <select id="channel_leave" class="input">
-                {% for ch in channels %}
-                <option value="{{ ch.id }}" {% if cfg.jl.channel_leave == ch.id %}selected{% endif %}>#{{ ch.name }}</option>
-                {% endfor %}
-            </select>
-            <label>本文</label>
-            <textarea id="l_desc" class="input" rows="5">{{ cfg.jl.leave_embed.description }}</textarea>
-        </div>
-    </div>
-
-    <button class="btn large" onclick="saveSettings('{{ guild.id }}')">設定を保存</button>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Join/Leave 設定</h1>
+    <p class="page-desc">Join/Leave を独立して設定し、Embedも編集できます。</p>
+  </div>
 </div>
 
 <script>
-function showTab(id) {
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    event.currentTarget.classList.add('active');
-}
+  window.__CFG__ = {{ cfg | tojson }};
 </script>
+
+<div class="glass-card">
+  <div class="form-grid">
+    <div class="field third">
+      <label>有効化</label>
+      <select id="jl_enabled" class="input">
+        <option value="true" {% if cfg.jl.enabled %}selected{% endif %}>ON</option>
+        <option value="false" {% if not cfg.jl.enabled %}selected{% endif %}>OFF</option>
+      </select>
+    </div>
+
+    <div class="field third">
+      <label>Botを除外</label>
+      <select id="jl_ignore_bots" class="input">
+        <option value="true" {% if cfg.jl.filter.ignore_bots %}selected{% endif %}>ON</option>
+        <option value="false" {% if not cfg.jl.filter.ignore_bots %}selected{% endif %}>OFF</option>
+      </select>
+    </div>
+
+    <div class="field third">
+      <label>Join通知チャンネル</label>
+      <select id="jl_join_ch" class="input">
+        <option value="">未設定</option>
+        {% for ch in channels %}
+          <option value="{{ ch.id }}" {% if cfg.jl.channel_join == ch.id %}selected{% endif %}>#{{ ch.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="field third">
+      <label>Leave通知チャンネル</label>
+      <select id="jl_leave_ch" class="input">
+        <option value="">未設定</option>
+        {% for ch in channels %}
+          <option value="{{ ch.id }}" {% if cfg.jl.channel_leave == ch.id %}selected{% endif %}>#{{ ch.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn primary" onclick="jlSave('{{ guild.id }}')">保存</button>
+  </div>
+</div>
+
+<div class="glass-card">
+  <div style="font-weight:900; margin-bottom:8px;">Join Embed</div>
+  <div class="form-grid">
+    <div class="field half">
+      <label>タイトル</label>
+      <input id="jl_join_title" class="input" value="{{ cfg.jl.join_embed.title }}">
+    </div>
+    <div class="field half">
+      <label>カラー</label>
+      <input id="jl_join_color" class="input" value="{{ cfg.jl.join_embed.color }}">
+    </div>
+    <div class="field">
+      <label>本文</label>
+      <textarea id="jl_join_desc" class="input">{{ cfg.jl.join_embed.description }}</textarea>
+      <div class="help">{user} {user_id} {created_at} {member_count} が使用できます</div>
+    </div>
+    <div class="field">
+      <label>フッター</label>
+      <input id="jl_join_footer" class="input" value="{{ cfg.jl.join_embed.footer.text }}">
+    </div>
+  </div>
+</div>
+
+<div class="glass-card">
+  <div style="font-weight:900; margin-bottom:8px;">Leave Embed</div>
+  <div class="form-grid">
+    <div class="field half">
+      <label>タイトル</label>
+      <input id="jl_leave_title" class="input" value="{{ cfg.jl.leave_embed.title }}">
+    </div>
+    <div class="field half">
+      <label>カラー</label>
+      <input id="jl_leave_color" class="input" value="{{ cfg.jl.leave_embed.color }}">
+    </div>
+    <div class="field">
+      <label>本文</label>
+      <textarea id="jl_leave_desc" class="input">{{ cfg.jl.leave_embed.description }}</textarea>
+      <div class="help">{user} {user_id} {created_at} {member_count} が使用できます</div>
+    </div>
+    <div class="field">
+      <label>フッター</label>
+      <input id="jl_leave_footer" class="input" value="{{ cfg.jl.leave_embed.footer.text }}">
+    </div>
+  </div>
+</div>
+
+<div class="glass-card">
+  <div style="font-weight:900; margin-bottom:8px;">表示項目</div>
+  <div class="form-grid">
+    <div class="field third"><label>ID</label>
+      <select id="jl_f_id" class="input">
+        <option value="true" {% if cfg.jl.fields.show_id %}selected{% endif %}>ON</option>
+        <option value="false" {% if not cfg.jl.fields.show_id %}selected{% endif %}>OFF</option>
+      </select>
+    </div>
+    <div class="field third"><label>作成日</label>
+      <select id="jl_f_created" class="input">
+        <option value="true" {% if cfg.jl.fields.show_created_at %}selected{% endif %}>ON</option>
+        <option value="false" {% if not cfg.jl.fields.show_created_at %}selected{% endif %}>OFF</option>
+      </select>
+    </div>
+    <div class="field third"><label>参加順</label>
+      <select id="jl_f_order" class="input">
+        <option value="true" {% if cfg.jl.fields.show_join_order %}selected{% endif %}>ON</option>
+        <option value="false" {% if not cfg.jl.fields.show_join_order %}selected{% endif %}>OFF</option>
+      </select>
+    </div>
+    <div class="field third"><label>メンバー数</label>
+      <select id="jl_f_count" class="input">
+        <option value="true" {% if cfg.jl.fields.show_member_count %}selected{% endif %}>ON</option>
+        <option value="false" {% if not cfg.jl.fields.show_member_count %}selected{% endif %}>OFF</option>
+      </select>
+    </div>
+    <div class="field third"><label>アイコン</label>
+      <select id="jl_f_avatar" class="input">
+        <option value="true" {% if cfg.jl.fields.show_avatar %}selected{% endif %}>ON</option>
+        <option value="false" {% if not cfg.jl.fields.show_avatar %}selected{% endif %}>OFF</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn primary" onclick="jlSave('{{ guild.id }}')">保存</button>
+  </div>
+</div>
+
 {% endblock %}

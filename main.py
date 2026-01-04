@@ -3,10 +3,10 @@ from discord.ext import commands
 import os
 import json
 import logging
+import datetime
 from pathlib import Path
 from dotenv import load_dotenv
 
-# ロギング設定
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
 logger = logging.getLogger("BotMain")
 load_dotenv()
@@ -17,29 +17,49 @@ class MyBot(commands.Bot):
         super().__init__(command_prefix="!", intents=intents)
         self.web_started = False
 
+    def update_stats(self, guild_id, key):
+        today = datetime.date.today().isoformat()
+        path = Path(f"data/stats/{guild_id}.json")
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        data = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+        if today not in data:
+            data[today] = {"messages": 0, "joins": 0, "leaves": 0}
+
+        data[today][key] += 1
+        path.write_text(json.dumps(data, indent=4, ensure_ascii=False), encoding="utf-8")
+
     async def setup_hook(self):
-        # 必須ディレクトリ作成
-        for d in ["settings/guilds", "data/tickets", "data/logs", "data/ranking"]:
+        for d in ["settings/guilds", "data/tickets", "data/stats", "data/ranking"]:
             Path(d).mkdir(parents=True, exist_ok=True)
 
-        # Cogsロード
-        extensions = [
+        # ✅ Webは cogs.web_admin をロード（__init__.pyのsetupが起動する）
+        exts = [
             "cogs.web_admin",
             "cogs.ticket_system",
             "cogs.join_leave",
-            "cogs.ranking"
+            "cogs.ranking",
         ]
-        for ext in extensions:
-            try:
-                await self.load_extension(ext)
-                logger.info(f"Extension loaded: {ext}")
-            except Exception as e:
-                logger.error(f"Failed to load {ext}: {e}", exc_info=True)
+        for ext in exts:
+            await self.load_extension(ext)
 
     async def on_ready(self):
-        logger.info(f"Logged in as {self.user} (ID: {self.user.id})")
-        await self.tree.sync()
-        logger.info("Slash commands synced.")
+        logger.info(f"Logged in as {self.user}")
+        try:
+            await self.tree.sync()
+        except Exception:
+            logger.exception("tree.sync failed")
+
+    async def on_message(self, message):
+        if not message.author.bot and message.guild:
+            self.update_stats(message.guild.id, "messages")
+        await self.process_commands(message)
+
+    async def on_member_join(self, member):
+        self.update_stats(member.guild.id, "joins")
+
+    async def on_member_remove(self, member):
+        self.update_stats(member.guild.id, "leaves")
 
 if __name__ == "__main__":
     bot = MyBot()

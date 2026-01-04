@@ -1,63 +1,56 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="dashboard">
-    <h1>概要</h1>
-    
-    <div class="stat-grid">
-        <div class="stat-item">
-            <div class="stat-icon msg"><i class="fas fa-envelope"></i></div>
-            <div class="stat-data">
-                <span class="label">新着メッセージ</span>
-                <span class="val">124</span>
-            </div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-icon usr"><i class="fas fa-user-plus"></i></div>
-            <div class="stat-data">
-                <span class="label">合計メンバー</span>
-                <span class="val">{{ guild.member_count }}</span>
-            </div>
-        </div>
-    </div>
 
-    <div class="chart-card">
-        <h3>アクティビティ (直近7日間)</h3>
-        <canvas id="myChart" height="100"></canvas>
-    </div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">概要</h1>
+    <p class="page-desc">サーバー状況と直近の統計です。</p>
+  </div>
+</div>
 
-    <div class="config-grid">
-        <div class="module-card">
-            <h3><i class="fas fa-cog"></i> Settings</h3>
-            <p>サーバー通知や言語、全体的な動作を構成します。</p>
-            <a href="/guild/{{ guild.id }}/settings/jl" class="btn primary">Configure</a>
-        </div>
-        <div class="module-card">
-            <h3><i class="fas fa-ticket-alt"></i> Tickets</h3>
-            <p>複数パネル管理、自動削除、クローズカテゴリの設定。</p>
-            <a href="/guild/{{ guild.id }}/settings/ticket" class="btn primary">Manage</a>
-        </div>
+<div class="glass-card">
+  <div class="form-grid">
+    <div class="field half">
+      <div style="font-weight:900;">合計メンバー</div>
+      <div style="font-size:28px; font-weight:900; margin-top:6px;">{{ guild.member_count }}</div>
     </div>
+    <div class="field half">
+      <div style="font-weight:900;">今日のメッセージ</div>
+      <div style="font-size:28px; font-weight:900; margin-top:6px;">{{ stats.messages[-1] if stats.messages else 0 }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="glass-card chart-card">
+  <div style="font-weight:900; margin-bottom:10px;">メッセージ送信履歴（7日）</div>
+  <div class="chart-wrap">
+    <canvas id="msgChart"></canvas>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const ctx = document.getElementById('myChart');
+const ctx = document.getElementById('msgChart').getContext('2d');
 new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: {{ stats.dates | tojson }},
-        datasets: [{
-            label: 'メッセージ数',
-            data: {{ stats.messages | tojson }},
-            borderColor: '#5865f2',
-            backgroundColor: 'rgba(88, 101, 242, 0.1)',
-            fill: true,
-            tension: 0.4
-        }]
-    },
-    options: {
-        scales: { y: { beginAtZero: true, grid: { color: '#2a2d44' } } }
+  type: 'line',
+  data: {
+    labels: {{ stats.dates | tojson }},
+    datasets: [{
+      label: 'Messages',
+      data: {{ stats.messages | tojson }},
+      fill: true,
+      tension: 0.35
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true }
     }
+  }
 });
 </script>
+
 {% endblock %}

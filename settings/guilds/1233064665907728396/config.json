@@ -1,16 +1,342 @@
 {
-    "features": {
-        "join_leave": true,
-        "ticket": true,
-        "ranking": true
+  "lang": "ja",
+  "jl": {
+    "enabled": true,
+    "filter": {
+      "ignore_bots": true
     },
-    "join_leave": {
-        "channel_id": "1233064667790704643",
-        "join_msg": "Welcome {user}!",
-        "leave_msg": "Goodbye {user}!"
+    "channel_join": "1233065182092202004",
+    "channel_leave": "1233065182092202004",
+    "join_embed": {
+      "title": "Welcome",
+      "description": "",
+      "color": 5763719,
+      "footer": {
+        "text": "",
+        "icon_url": ""
+      },
+      "author": {
+        "icon_url": "",
+        "name": ""
+      },
+      "image_url": "",
+      "thumbnail_url": ""
     },
-    "ticket": {
-        "category_id": "1240528323080355860",
-        "staff_role_id": "1456975110001917976"
+    "leave_embed": {
+      "title": "Goodbye",
+      "description": "",
+      "color": 15548997,
+      "footer": {
+        "text": "",
+        "icon_url": ""
+      },
+      "author": {
+        "icon_url": "",
+        "name": ""
+      },
+      "image_url": "",
+      "thumbnail_url": ""
+    },
+    "fields": {
+      "show_id": true,
+      "show_created_at": true,
+      "show_join_order": false,
+      "show_member_count": true,
+      "show_avatar": true
+    },
+    "filters": {
+      "ignore_bots": true
+    },
+    "channels": {
+      "join": "",
+      "leave": ""
+    },
+    "display": {
+      "show_id": true,
+      "show_created_at": true,
+      "show_join_position": false,
+      "show_member_count": true,
+      "show_avatar": true
     }
+  },
+  "ticket": {
+    "limits": {
+      "max_open_per_user": 5,
+      "cooldown_minutes": 30
+    },
+    "auto": {
+      "closed_delete_days": 14,
+      "inactivity_delete_hours": 30
+    },
+    "log_channel_id": "1233067273443606578",
+    "panels": [
+      {
+        "auto_delete": {
+          "enabled": false,
+          "inactive_minutes": 0
+        },
+        "button_label": "チケット作成",
+        "category_id": "",
+        "close": {
+          "allow_reopen": true,
+          "closed_category_id": "1240528323080355860",
+          "confirm_required": true,
+          "delete_after_days": 14
+        },
+        "deploy": {
+          "channel_id": "1457040949736640522",
+          "message_id": "1457186770910187722"
+        },
+        "deployments": [],
+        "description": "下のボタンを押してチケットを作成してください。",
+        "enabled": true,
+        "limits": {
+          "cooldown_minutes": 30,
+          "max_open_per_user": 5
+        },
+        "modal": {
+          "enabled": true,
+          "labels": {
+            "body": "本文",
+            "image": "参考画像URL（任意）",
+            "type": "ジャンル",
+            "urgency": "緊急度"
+          },
+          "urgency_choices": [
+            "Low",
+            "Med",
+            "High"
+          ]
+        },
+        "mode": "channel",
+        "name_template": "ticket-{count}-{user}",
+        "open_message": {
+          "embed": {
+            "color": "#57F287",
+            "description": "種別: **{type}**\n緊急度: **{urgency}**\n\n{body}",
+            "footer": "Ticket System",
+            "title": "✅ チケット作成"
+          },
+          "enabled": true
+        },
+        "panel_name": "default",
+        "parent_category_id": "",
+        "permissions": {
+          "staff_role_ids": [
+            "1456975110001917976",
+            "1400426147564490875"
+          ],
+          "viewer_role_ids": []
+        },
+        "rules_embed": {
+          "color": "#FEE75C",
+          "description": "個人情報は書かないでください。\n@everyoneは禁止です。",
+          "enabled": true,
+          "footer": "Rules",
+          "title": "📌 注意事項"
+        },
+        "staff_role_ids": [],
+        "thread_parent_channel_id": "",
+        "title": "サポート",
+        "types": [
+          "質問",
+          "不具合",
+          "申請",
+          "通報"
+        ]
+      },
+      {
+        "button_label": "チケット作成",
+        "category_id": "",
+        "deployments": [],
+        "description": "下のボタンを押してチケットを作成してください。",
+        "panel_id": "panel2",
+        "panel_name": "新規パネル2",
+        "staff_role_ids": [],
+        "title": "サポート",
+        "enabled": true,
+        "deploy": {
+          "channel_id": "",
+          "message_id": ""
+        },
+        "mode": "channel",
+        "parent_category_id": "",
+        "thread_parent_channel_id": "",
+        "name_template": "ticket-{count}-{user}",
+        "types": [
+          "質問",
+          "不具合",
+          "申請",
+          "通報"
+        ],
+        "limits": {
+          "max_open_per_user": 5,
+          "cooldown_minutes": 30
+        },
+        "permissions": {
+          "staff_role_ids": [],
+          "viewer_role_ids": []
+        },
+        "open_message": {
+          "enabled": true,
+          "embed": {
+            "title": "✅ チケット作成",
+            "description": "種別: **{type}**\n緊急度: **{urgency}**\n\n{body}",
+            "color": "#57F287",
+            "footer": "Ticket System"
+          }
+        },
+        "modal": {
+          "enabled": true,
+          "labels": {
+            "type": "ジャンル",
+            "body": "本文",
+            "urgency": "緊急度",
+            "image": "参考画像URL（任意）"
+          },
+          "urgency_choices": [
+            "Low",
+            "Med",
+            "High"
+          ]
+        },
+        "rules_embed": {
+          "enabled": true,
+          "title": "📌 注意事項",
+          "description": "個人情報は書かないでください。\n@everyoneは禁止です。",
+          "color": "#FEE75C",
+          "footer": "Rules"
+        },
+        "close": {
+          "confirm_required": true,
+          "closed_category_id": "",
+          "allow_reopen": true,
+          "delete_after_days": 14
+        },
+        "auto_delete": {
+          "enabled": false,
+          "inactive_minutes": 0
+        }
+      },
+      {
+        "button_label": "チケット作成",
+        "category_id": "",
+        "deployments": [],
+        "description": "下のボタンを押してチケットを作成してください。",
+        "panel_name": "新規パネル3",
+        "staff_role_ids": [],
+        "title": "サポート",
+        "panel_id": "panel3",
+        "enabled": true,
+        "deploy": {
+          "channel_id": "",
+          "message_id": ""
+        },
+        "mode": "channel",
+        "parent_category_id": "",
+        "thread_parent_channel_id": "",
+        "name_template": "ticket-{count}-{user}",
+        "types": [
+          "質問",
+          "不具合",
+          "申請",
+          "通報"
+        ],
+        "limits": {
+          "max_open_per_user": 5,
+          "cooldown_minutes": 30
+        },
+        "permissions": {
+          "staff_role_ids": [],
+          "viewer_role_ids": []
+        },
+        "open_message": {
+          "enabled": true,
+          "embed": {
+            "title": "✅ チケット作成",
+            "description": "種別: **{type}**\n緊急度: **{urgency}**\n\n{body}",
+            "color": "#57F287",
+            "footer": "Ticket System"
+          }
+        },
+        "modal": {
+          "enabled": true,
+          "labels": {
+            "type": "ジャンル",
+            "body": "本文",
+            "urgency": "緊急度",
+            "image": "参考画像URL（任意）"
+          },
+          "urgency_choices": [
+            "Low",
+            "Med",
+            "High"
+          ]
+        },
+        "rules_embed": {
+          "enabled": true,
+          "title": "📌 注意事項",
+          "description": "個人情報は書かないでください。\n@everyoneは禁止です。",
+          "color": "#FEE75C",
+          "footer": "Rules"
+        },
+        "close": {
+          "confirm_required": true,
+          "closed_category_id": "",
+          "allow_reopen": true,
+          "delete_after_days": 14
+        },
+        "auto_delete": {
+          "enabled": false,
+          "inactive_minutes": 0
+        }
+      }
+    ],
+    "staff_roles": [],
+    "enabled": true
+  },
+  "rank": {
+    "enabled": true,
+    "cooldown": 60,
+    "embed": {
+      "title": "ランク - {user}",
+      "description": "あなたの現在のランク情報です。",
+      "color": "#6D7CFF",
+      "fields": [
+        {
+          "inline": true,
+          "name": "レベル",
+          "value": "{level}"
+        },
+        {
+          "inline": true,
+          "name": "XP",
+          "value": "{xp}/{next}"
+        },
+        {
+          "inline": true,
+          "name": "メッセージ",
+          "value": "{messages}"
+        }
+      ],
+      "footer": {
+        "text": "",
+        "icon_url": ""
+      }
+    },
+    "leaderboard": {
+      "enabled": false,
+      "channel_id": "1457180028792996094",
+      "interval_minutes": 10,
+      "message_id": "1457180097177190595"
+    },
+    "formula": "level * 100",
+    "types": [
+      "chat"
+    ],
+    "leveling_enabled": true,
+    "text_leaderboard_enabled": true,
+    "text_leaderboard_window": "7d",
+    "level_roles": []
+  }
 }
