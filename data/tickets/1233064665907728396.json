@@ -1,4 +1,17 @@
 {
-  "tickets": [],
+  "tickets": [
+    {
+      "ticket_id": "1233064665907728396-0-1767520895949",
+      "panel_index": 0,
+      "user_id": 843163055101444117,
+      "status": "open",
+      "type": "不具合",
+      "urgency": "とても高い",
+      "created_at": "2026-01-04T10:01:35Z",
+      "last_message_at": "2026-01-04T10:01:35Z",
+      "channel_id": 1457313000787808381,
+      "thread_id": null
+    }
+  ],
   "counters": {}
 }

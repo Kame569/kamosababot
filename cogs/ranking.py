@@ -77,6 +77,7 @@ class Ranking(commands.Cog):
         self.bot = bot
         self._vc_sessions = {}  # (gid, uid) -> join_time
         self._task = self.bot.loop.create_task(self._leaderboard_loop())
+        self._lb_last = {}
 
     def cog_unload(self):
         try:
@@ -150,6 +151,7 @@ class Ranking(commands.Cog):
         vc_sec = int(vc.get(uid, 0))
 
         # ✅ 指定変数に合わせる：xp/level/next/messages
+        # ここでは messages を xp として扱う（要求仕様に沿って）
         level, xp, next_xp = _calc_level_from_xp(messages)
 
         # 既存互換のために追加変数も用意
@@ -254,9 +256,34 @@ class Ranking(commands.Cog):
         save_guild_config(guild.id, cfg)
         return m
 
+    # ✅ Webの「Discordに設置」ボタン用：これが無いとapi_rank_deployが動かない
+    async def deploy_leaderboard(self, channel: discord.TextChannel):
+        """
+        WebAPIから呼ばれる想定:
+        - leaderboad.enabled を True にする
+        - channel_id を保存
+        - message_id をリセット（新規送信）
+        - 送信して message_id を保存
+        """
+        guild = channel.guild
+        cfg = load_guild_config(guild.id)
+        cfg.setdefault("rank", {})
+        cfg["rank"].setdefault("leaderboard", {})
+
+        cfg["rank"]["leaderboard"]["enabled"] = True
+        cfg["rank"]["leaderboard"]["channel_id"] = str(channel.id)
+        cfg["rank"]["leaderboard"]["message_id"] = ""  # 新規で送る
+        # interval_minutes は既存値を尊重（無ければ10）
+        if "interval_minutes" not in cfg["rank"]["leaderboard"]:
+            cfg["rank"]["leaderboard"]["interval_minutes"] = 10
+
+        save_guild_config(guild.id, cfg)
+
+        m = await self.deploy_or_update_leaderboard(guild, force_send=True)
+        return m
+
     async def _leaderboard_loop(self):
         await self.bot.wait_until_ready()
-        self._lb_last = {}
         while not self.bot.is_closed():
             try:
                 now = time.time()

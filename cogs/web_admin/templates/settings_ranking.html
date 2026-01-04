@@ -1,87 +1,47 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="page-header">
-  <div>
-    <h1 class="page-title">Ranking 設定</h1>
-    <p class="page-desc">/rank のEmbedと、常時更新リーダーボードを設定します。</p>
-  </div>
-</div>
-
-<script>window.__CFG__ = {{ cfg | tojson }};</script>
+<h1>Ranking 設定</h1>
 
 <div class="glass-card">
-  <div class="form-grid">
-    <div class="field third">
-      <label>有効化</label>
-      <select id="rank_enabled" class="input">
-        <option value="true" {% if cfg.rank.enabled %}selected{% endif %}>ON</option>
-        <option value="false" {% if not cfg.rank.enabled %}selected{% endif %}>OFF</option>
-      </select>
-    </div>
+  <label>有効化</label>
+  <input id="rank_enabled" type="checkbox" {% if cfg.rank.enabled %}checked{% endif %}>
 
-    <div class="field third">
-      <label>クールダウン（秒）</label>
-      <input id="rank_cd" class="input" type="number" value="{{ cfg.rank.cooldown }}">
-    </div>
+  <label>Embed タイトル</label>
+  <input id="rank_title" class="input" value="{{ cfg.rank.embed.title }}">
 
-    <div class="field half">
-      <label>/rank Embed タイトル</label>
-      <input id="rank_title" class="input" value="{{ cfg.rank.embed.title }}">
-    </div>
+  <label>Embed 説明</label>
+  <textarea id="rank_desc" class="textarea" rows="6">{{ cfg.rank.embed.description }}</textarea>
 
-    <div class="field half">
-      <label>カラー</label>
-      <input id="rank_color" class="input" value="{{ cfg.rank.embed.color }}">
-    </div>
+  <label>カラー（#RRGGBB）</label>
+  <input id="rank_color" class="input" value="{{ cfg.rank.embed.color }}">
 
-    <div class="field">
-      <label>/rank Embed 説明</label>
-      <textarea id="rank_desc" class="input">{{ cfg.rank.embed.description }}</textarea>
-      <div class="help">{user} {text_count} {vc_time} {overall_score} が使用できます</div>
-    </div>
+  <div class="divider"></div>
+
+  <h3>Leaderboard</h3>
+  <label>有効化</label>
+  <input id="lb_enabled" type="checkbox" {% if cfg.rank.leaderboard.enabled %}checked{% endif %}>
+
+  <label>設置先チャンネル</label>
+  <div class="select-wrap">
+    <select id="lb_channel" class="select">
+      <option value="">(未指定)</option>
+      {% for ch in channels %}
+        <option value="{{ ch.id }}" {% if cfg.rank.leaderboard.channel_id|string == ch.id %}selected{% endif %}>#{{ ch.name }}</option>
+      {% endfor %}
+    </select>
+    <span class="chev">▾</span>
   </div>
+
+  <label>更新間隔（分）</label>
+  <input id="lb_interval" type="number" class="input" min="1" value="{{ cfg.rank.leaderboard.interval_minutes }}">
 
   <div class="actions">
     <button class="btn primary" onclick="rankSave('{{ guild.id }}')">保存</button>
+    <button class="btn" onclick="rankDeploy('{{ guild.id }}')">Discordに設置</button>
   </div>
 </div>
 
-<div class="glass-card">
-  <div style="font-weight:900; margin-bottom:8px;">リーダーボード（常時表示 Top5）</div>
-  <div class="form-grid">
-    <div class="field third">
-      <label>有効化</label>
-      <select id="lb_enabled" class="input">
-        <option value="true" {% if cfg.rank.leaderboard.enabled %}selected{% endif %}>ON</option>
-        <option value="false" {% if not cfg.rank.leaderboard.enabled %}selected{% endif %}>OFF</option>
-      </select>
-    </div>
-
-    <div class="field third">
-      <label>更新間隔（分）</label>
-      <input id="lb_interval" class="input" type="number" value="{{ cfg.rank.leaderboard.interval_minutes }}">
-    </div>
-
-    <div class="field half">
-      <label>投稿先チャンネル</label>
-      <select id="lb_ch" class="input">
-        <option value="">未設定</option>
-        {% for ch in channels %}
-          <option value="{{ ch.id }}" {% if cfg.rank.leaderboard.channel_id == ch.id %}selected{% endif %}>#{{ ch.name }}</option>
-        {% endfor %}
-      </select>
-    </div>
-  </div>
-
-  <div class="actions">
-    <button class="btn" onclick="rankSave('{{ guild.id }}')">保存</button>
-    <button class="btn primary" onclick="rankDeployLeaderboard('{{ guild.id }}')">Discordに設置（以後自動更新）</button>
-  </div>
-
-  {% if cfg.rank.leaderboard.message_id %}
-  <div class="help">現在の設置メッセージID: {{ cfg.rank.leaderboard.message_id }}</div>
-  {% endif %}
-</div>
+<script id="cfg-json" type="application/json">{{ cfg | tojson }}</script>
 
 {% endblock %}
