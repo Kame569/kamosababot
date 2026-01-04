@@ -1,25 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="page-header">
+<script id="cfg-json" type="application/json">{{ cfg | tojson }}</script>
+
+<div class="page-head">
   <div>
-    <h1 class="page-title">Ticket System</h1>
-    <p class="page-desc">パネルごとに設定。フォーラム(入力) / ルール を独立してON/OFFできます。</p>
+    <h1>Ticket System</h1>
+    <div class="muted">パネルごとに設定します（フォーラム / ルール は独立ON/OFF）</div>
   </div>
 
-  <div class="header-actions">
-    <button class="btn" onclick="ticketAddPanel('{{ guild.id }}')">＋ パネル追加</button>
-    <button id="ticket_save_btn" class="btn primary" onclick="ticketSave('{{ guild.id }}')">保存</button>
-    <button id="ticket_deploy_btn" class="btn" onclick="ticketDeploy('{{ guild.id }}')">Discordに設置</button>
+  <div class="head-actions">
+    <button class="btn" type="button" onclick="ticketAddPanel('{{ guild.id }}')">＋ パネル追加</button>
   </div>
 </div>
 
 <div class="glass-card">
-  <div class="panel-row">
-    <div class="field" style="flex:1;">
-      <label>編集するパネル</label>
+  <div class="row">
+    <div class="field">
+      <label>パネル</label>
       <div class="select-wrap">
-        <select id="ticket_panel_select" class="select" onchange="ticketSwitchPanel('{{ guild.id }}')">
+        <select id="ticket_panel_select" class="select">
           {% for p in panels %}
             <option value="{{ loop.index0 }}" {% if loop.index0 == panel_index %}selected{% endif %}>
               {{ loop.index0 }} : {{ p.panel_name }}
@@ -28,10 +28,11 @@
         </select>
         <span class="chev">▾</span>
       </div>
+      <div class="hint">選択すると自動で表示が更新されます（保存は必要）</div>
     </div>
 
-    <div class="field" style="width:160px;">
-      <label>有効化</label>
+    <div class="field">
+      <label>パネル有効化</label>
       <label class="switch">
         <input id="ticket_panel_enabled" type="checkbox" {% if panel.enabled %}checked{% endif %}>
         <span class="slider"></span>
@@ -39,170 +40,243 @@
     </div>
   </div>
 
-  <div class="subtabs">
-    <a class="tab {% if tab=='form' %}active{% endif %}"
-       href="/guild/{{ guild.id }}/settings/ticket?panel={{ panel_index }}&tab=form">フォーラム</a>
-    <a class="tab {% if tab=='rules' %}active{% endif %}"
-       href="/guild/{{ guild.id }}/settings/ticket?panel={{ panel_index }}&tab=rules">ルール</a>
+  <div class="tabs">
+    <button class="tabbtn {% if tab == 'form' %}active{% endif %}" type="button"
+            onclick="ticketChangeTab('form')">フォーラム</button>
+    <button class="tabbtn {% if tab == 'rules' %}active{% endif %}" type="button"
+            onclick="ticketChangeTab('rules')">ルール</button>
   </div>
-</div>
 
-{% if tab == "form" %}
-<div class="glass-card">
-  <h3 class="section-title">フォーラム（入力項目）</h3>
+  <!-- ======= TAB: FORM ======= -->
+  <div id="tab_form" class="tabpane {% if tab == 'form' %}active{% endif %}">
+    <div class="section">
+      <div class="section-head">
+        <h3>フォーラム機能</h3>
 
-  <div class="form-grid">
-    <div class="field">
-      <label>フォーラム入力を有効化</label>
-      <label class="switch">
-        <input id="ticket_forum_enabled" type="checkbox" {% if panel.form and panel.form.enabled %}checked{% endif %}>
-        <span class="slider"></span>
-      </label>
-    </div>
+        <!-- ✅ ON/OFFをボタンで切替 -->
+        <div class="seg" role="tablist" aria-label="forum toggle">
+          <button id="forum_btn_off" class="seg-btn" type="button" onclick="ticketSetForum(false)">OFF</button>
+          <button id="forum_btn_on"  class="seg-btn" type="button" onclick="ticketSetForum(true)">ON</button>
+        </div>
 
-    <div class="field">
-      <label>作成方式</label>
-      <div class="select-wrap">
-        <select id="ticket_mode" class="select">
-          <option value="channel" {% if panel.mode=='channel' %}selected{% endif %}>専用チャンネルを作成</option>
-          <option value="thread" {% if panel.mode=='thread' %}selected{% endif %}>プライベートスレッドを作成</option>
-        </select>
-        <span class="chev">▾</span>
+        <!-- hidden state (保存用) -->
+        <input id="ticket_forum_enabled" type="checkbox" hidden {% if panel.form.enabled %}checked{% endif %}>
+      </div>
+
+      <div id="forum_body" class="forum-body">
+        <div class="form-grid">
+          <div class="field">
+            <label>作成方式（パネルごと）</label>
+            <div class="select-wrap">
+              <select id="ticket_mode" class="select">
+                <option value="channel" {% if panel.mode == 'channel' %}selected{% endif %}>専用チャンネル作成</option>
+                <option value="thread"  {% if panel.mode == 'thread' %}selected{% endif %}>プライベートスレッド作成</option>
+              </select>
+              <span class="chev">▾</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>チャンネル名テンプレ</label>
+            <input id="ticket_name_template" class="input" value="{{ panel.name_template }}">
+            <div class="hint">{user} / {user_id} / {created_at} / {count}</div>
+          </div>
+
+          <div class="field">
+            <label>親カテゴリ（専用チャンネル用）</label>
+            <div class="select-wrap">
+              <select id="ticket_parent_category" class="select">
+                <option value="">（未指定）</option>
+                {% for c in categories %}
+                  <option value="{{ c.id }}" {% if c.id == panel.parent_category_id %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+              </select>
+              <span class="chev">▾</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>親チャンネル（スレッド用）</label>
+            <div class="select-wrap">
+              <select id="ticket_thread_parent" class="select">
+                <option value="">（未指定）</option>
+                {% for ch in channels %}
+                  <option value="{{ ch.id }}" {% if ch.id == panel.thread_parent_channel_id %}selected{% endif %}>#{{ ch.name }}</option>
+                {% endfor %}
+              </select>
+              <span class="chev">▾</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>STAFFロールID（カンマ区切り）</label>
+            <input id="ticket_staff_roles" class="input"
+                   value="{% if panel.permissions.staff_role_ids %}{{ panel.permissions.staff_role_ids | join(',') }}{% endif %}">
+          </div>
+
+          <div class="field">
+            <label>同時保有上限（ユーザー）</label>
+            <input class="input" id="ticket_limit_max" value="{{ panel.limits.max_open_per_user }}">
+          </div>
+
+          <div class="field">
+            <label>連続作成クールダウン（分）</label>
+            <input class="input" id="ticket_limit_cd" value="{{ panel.limits.cooldown_minutes }}">
+          </div>
+
+          <div class="field">
+            <label>設置先チャンネル</label>
+            <div class="select-wrap">
+              <select id="ticket_deploy_channel" class="select">
+                <option value="">（未指定）</option>
+                {% for ch in channels %}
+                  <option value="{{ ch.id }}"
+                    {% if panel.deploy.channel_id and (ch.id|string) == (panel.deploy.channel_id|string) %}selected{% endif %}>
+                    #{{ ch.name }}
+                  </option>
+                {% endfor %}
+              </select>
+              <span class="chev">▾</span>
+            </div>
+            <div class="hint">Discordに設置する先</div>
+          </div>
+        </div>
+
+        <div class="subhead">
+          <h4>入力項目（無制限）</h4>
+          <div class="muted">＋項目追加 → 保存で反映。OFF時は入力項目は使われません。</div>
+        </div>
+
+        <div id="ticket_form_fields" class="repeat"></div>
+
+        <div class="actions">
+          <button class="btn" type="button" onclick="ticketAddFormField()">＋ 項目追加</button>
+        </div>
       </div>
     </div>
+  </div>
 
-    <div class="field">
-      <label>チャンネル名テンプレ</label>
-      <input id="ticket_name_template" class="input" value="{{ panel.name_template }}">
-      <div class="help">変数: {user} {user_id} {created_at} {count}</div>
-    </div>
-
-    <div class="field">
-      <label>親カテゴリ（専用チャンネル時）</label>
-      <div class="select-wrap">
-        <select id="ticket_parent_category" class="select">
-          <option value="">(未指定)</option>
-          {% for c in categories %}
-            <option value="{{ c.id }}" {% if panel.parent_category_id|string == c.id %}selected{% endif %}>{{ c.name }}</option>
-          {% endfor %}
-        </select>
-        <span class="chev">▾</span>
+  <!-- ======= TAB: RULES ======= -->
+  <div id="tab_rules" class="tabpane {% if tab == 'rules' %}active{% endif %}">
+    <div class="section">
+      <div class="section-head">
+        <h3>ルール表示</h3>
+        <label class="switch">
+          <input id="ticket_rules_enabled" type="checkbox" {% if panel.rules.enabled %}checked{% endif %}>
+          <span class="slider"></span>
+        </label>
       </div>
-    </div>
 
-    <div class="field">
-      <label>親チャンネル（スレッド時）</label>
-      <div class="select-wrap">
-        <select id="ticket_thread_parent" class="select">
-          <option value="">(未指定)</option>
-          {% for ch in channels %}
-            <option value="{{ ch.id }}" {% if panel.thread_parent_channel_id|string == ch.id %}selected{% endif %}>#{{ ch.name }}</option>
-          {% endfor %}
-        </select>
-        <span class="chev">▾</span>
+      <div class="form-grid">
+        <div class="field">
+          <label>タイトル</label>
+          <input id="ticket_rules_title" class="input" value="{{ panel.rules.title }}">
+        </div>
+
+        <div class="field span-2">
+          <label>本文</label>
+          <textarea id="ticket_rules_body" class="input" rows="8">{{ panel.rules.body }}</textarea>
+          <div class="hint">空なら保存時にテンプレを自動挿入します</div>
+        </div>
+
+        <div class="field">
+          <label>@everyone 許可</label>
+          <label class="switch">
+            <input id="ticket_rules_allow_everyone" type="checkbox" {% if panel.rules.allow_everyone_mention %}checked{% endif %}>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="field">
+          <label>投稿/コメント権限ポリシー</label>
+          <div class="select-wrap">
+            <select id="ticket_rules_policy" class="select">
+              <option value="staff_only" {% if panel.rules.policy == 'staff_only' %}selected{% endif %}>STAFFのみ</option>
+              <option value="allowed_roles" {% if panel.rules.policy == 'allowed_roles' %}selected{% endif %}>許可ロールのみ</option>
+              <option value="staff_or_allowed" {% if panel.rules.policy == 'staff_or_allowed' %}selected{% endif %}>STAFF または 許可ロール</option>
+            </select>
+            <span class="chev">▾</span>
+          </div>
+        </div>
+
+        <div class="field span-2">
+          <label>許可ロールID（カンマ区切り）</label>
+          <input id="ticket_rules_allowed_roles" class="input"
+                 value="{% if panel.rules.allowed_role_ids %}{{ panel.rules.allowed_role_ids | join(',') }}{% endif %}">
+        </div>
       </div>
-    </div>
-
-    <div class="field">
-      <label>STAFFロール（複数OK、カンマ区切りでID）</label>
-      <input id="ticket_staff_roles" class="input" value="{{ panel.permissions.staff_role_ids | join(',') }}">
-    </div>
-
-    <div class="field">
-      <label>同時に持てるチケット数</label>
-      <input id="ticket_limit_max" type="number" class="input" min="1" value="{{ panel.limits.max_open_per_user }}">
-    </div>
-
-    <div class="field">
-      <label>連続作成クールダウン（分）</label>
-      <input id="ticket_limit_cd" type="number" class="input" min="0" value="{{ panel.limits.cooldown_minutes }}">
     </div>
   </div>
 
   <div class="divider"></div>
 
-  <div class="row-between">
-    <h3 class="section-title">入力項目（無制限）</h3>
-    <button class="btn" onclick="ticketAddFormField()">＋ 項目を追加</button>
-  </div>
-
-  <div id="ticket_form_fields" class="repeater"></div>
-
-  <div class="help">
-    ・緊急度は聞きません（要件）<br>
-    ・項目は自由に追加/削除できます（最初0件）。
-  </div>
-</div>
-
-{% else %}
-<div class="glass-card">
-  <h3 class="section-title">ルール（Embed）</h3>
-
-  <div class="form-grid">
-    <div class="field">
-      <label>ルール表示を有効化</label>
-      <label class="switch">
-        <input id="ticket_rules_enabled" type="checkbox" {% if panel.rules and panel.rules.enabled %}checked{% endif %}>
-        <span class="slider"></span>
-      </label>
+  <div class="section">
+    <h3>保存 / 設置</h3>
+    <div class="actions">
+      <button id="ticket_save_btn" class="btn" type="button" onclick="ticketSave('{{ guild.id }}')">保存</button>
+      <button id="ticket_deploy_btn" class="btn primary" type="button" onclick="ticketDeploy('{{ guild.id }}')">Discordに設置</button>
     </div>
 
-    <div class="field">
-      <label>タイトル</label>
-      <input id="ticket_rules_title" class="input" value="{{ (panel.rules.title if panel.rules and panel.rules.title else '📌ルール・注意事項') }}">
-    </div>
-
-    <div class="field" style="grid-column:1/-1;">
-      <label>本文</label>
-      <textarea id="ticket_rules_body" class="textarea" rows="8">{{ (panel.rules.body if panel.rules and panel.rules.body else '') }}</textarea>
-      <div class="help">本文が空なら保存時にテンプレを自動挿入します。</div>
-    </div>
-  </div>
-
-  <div class="divider"></div>
-
-  <h3 class="section-title">権限制御（ルール投稿/コメント）</h3>
-
-  <div class="form-grid">
-    <div class="field">
-      <label>@everyone メンション許可</label>
-      <label class="switch">
-        <input id="ticket_rules_allow_everyone" type="checkbox" {% if panel.rules and panel.rules.allow_everyone_mention %}checked{% endif %}>
-        <span class="slider"></span>
-      </label>
-    </div>
-
-    <div class="field">
-      <label>許可ロール（カンマ区切りID）</label>
-      <input id="ticket_rules_allowed_roles" class="input" value="{{ (panel.rules.allowed_role_ids | join(',') if panel.rules and panel.rules.allowed_role_ids else '') }}">
-    </div>
-
-    <div class="field">
-      <label>条件</label>
-      <div class="select-wrap">
-        {% set pol = (panel.rules.policy if panel.rules and panel.rules.policy else 'staff_only') %}
-        <select id="ticket_rules_policy" class="select">
-          <option value="staff_only" {% if pol=='staff_only' %}selected{% endif %}>STAFFのみ投稿可</option>
-          <option value="allowed_roles" {% if pol=='allowed_roles' %}selected{% endif %}>許可ロールのみ投稿可</option>
-          <option value="staff_or_allowed" {% if pol=='staff_or_allowed' %}selected{% endif %}>STAFF または 許可ロール</option>
-        </select>
-        <span class="chev">▾</span>
-      </div>
+    <div class="danger-zone">
+      <div class="muted">※削除は設置済みメッセージも削除します</div>
+      <button id="ticket_delete_btn" class="btn danger" type="button" onclick="ticketDeletePanel('{{ guild.id }}')">このパネルを削除</button>
     </div>
   </div>
 </div>
-{% endif %}
 
-<div class="glass-card danger-zone">
-  <h3 class="section-title">危険操作</h3>
-  <p class="page-desc">このパネルを削除します。設置済みメッセージがあればそれも削除します。</p>
-  <button class="btn danger" onclick="ticketDeletePanel('{{ guild.id }}')">このパネルを削除</button>
-</div>
+<style>
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px}
+.page-head h1{margin:0}
+.muted{opacity:.75;font-size:.92rem}
+.head-actions{display:flex;gap:10px;flex-wrap:wrap}
 
-<!-- ✅ VSCode診断対策：JinjaをJSに混ぜず、JSONとして埋め込む -->
-<script id="cfg-json" type="application/json">{{ cfg | tojson }}</script>
-<script id="ticket-meta" type="application/json">
-{"panel_index": {{ panel_index }}, "tab": "{{ tab }}"}
-</script>
+.row{display:flex;gap:18px;flex-wrap:wrap}
+.field{min-width:240px;flex:1}
+.hint{opacity:.7;font-size:.85rem;margin-top:6px}
+
+.tabs{display:flex;gap:10px;margin-top:18px;border-bottom:1px solid rgba(255,255,255,.06);padding-bottom:10px}
+.tabbtn{padding:10px 12px;border-radius:10px;color:#c9cbd1;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);cursor:pointer}
+.tabbtn.active{background:rgba(88,101,242,.18);border-color:rgba(88,101,242,.45);color:#fff}
+
+.tabpane{display:none}
+.tabpane.active{display:block}
+
+.section{margin-top:18px}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}
+.form-grid .span-2{grid-column:span 2}
+.subhead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:18px}
+.repeat{display:flex;flex-direction:column;gap:14px;margin-top:14px}
+.repeat-row{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:14px}
+.repeat-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.repeat-title{font-weight:700}
+
+.select-wrap{position:relative}
+.select{appearance:none;-webkit-appearance:none;-moz-appearance:none;width:100%;background:rgba(0,0,0,.2);border:1px solid #333;color:#fff;padding:12px 40px 12px 12px;border-radius:10px}
+.chev{position:absolute;right:12px;top:50%;transform:translateY(-50%);opacity:.85;pointer-events:none}
+
+.divider{height:1px;background:rgba(255,255,255,.06);margin:18px 0}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.danger-zone{margin-top:16px;padding-top:14px;border-top:1px dashed rgba(255,255,255,.08)}
+.btn.danger{background:#d83b3b;color:#fff}
+
+.switch{position:relative;display:inline-flex;align-items:center}
+.switch input{display:none}
+.switch .slider{width:44px;height:24px;border-radius:999px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.12);position:relative;display:inline-block}
+.switch .slider:after{content:"";position:absolute;top:50%;left:3px;transform:translateY(-50%);width:18px;height:18px;border-radius:50%;background:#fff;transition:.18s}
+.switch input:checked + .slider{background:rgba(88,101,242,.45);border-color:rgba(88,101,242,.7)}
+/* ✅ 端まで確実に移動する（44-18-3=23 → 22〜23px） */
+.switch input:checked + .slider:after{left:23px}
+
+.seg{display:flex;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden}
+.seg-btn{padding:10px 14px;background:transparent;border:none;color:#c9cbd1;cursor:pointer;font-weight:700}
+.seg-btn.active{background:rgba(88,101,242,.24);color:#fff}
+.forum-body.off{opacity:.5;pointer-events:none;filter:grayscale(.25)}
+
+@media (max-width: 900px){
+  .form-grid{grid-template-columns:1fr}
+  .form-grid .span-2{grid-column:span 1}
+}
+</style>
 
 {% endblock %}

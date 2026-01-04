@@ -32,19 +32,12 @@
       "show_member_count": true,
       "show_avatar": true
     },
-    "filters": {
-      "ignore_bots": true
-    },
     "channels": {
       "join": "",
       "leave": ""
     },
-    "display": {
-      "show_id": true,
-      "show_created_at": true,
-      "show_join_position": false,
-      "show_member_count": true,
-      "show_avatar": true
+    "filters": {
+      "ignore_bots": true
     }
   },
   "ticket": {
@@ -59,86 +52,58 @@
     "log_channel_id": "",
     "panels": [
       {
-        "auto_delete": {
-          "enabled": false,
-          "inactive_minutes": 0
-        },
-        "close": {
-          "allow_reopen": true,
-          "closed_category_id": "1457187318866645003",
-          "confirm_required": true,
-          "delete_after_days": 14
-        },
-        "close_category_id": "",
+        "panel_id": "default",
+        "panel_name": "質問",
+        "enabled": true,
+        "mode": "channel",
+        "name_template": "ticket-{count}-{user_id}",
         "create_message": "内容を送ってください。必要なら参考画像も添付OKです。",
+        "rules_embed": {
+          "title": "ルール / 注意事項",
+          "description": "誹謗中傷は禁止です。\n必要な情報をできるだけ詳しく書いてください。",
+          "color": "#5865F2",
+          "footer": {
+            "text": "",
+            "icon_url": ""
+          }
+        },
+        "staff_role_ids": [],
+        "close_category_id": "",
+        "reopen_enabled": true,
+        "modal": {
+          "enabled": true,
+          "genre_label": "ジャンル",
+          "body_label": "本文",
+          "urgency_label": "緊急度",
+          "allow_reference_image": true
+        },
+        "embed": {
+          "title": "サポート",
+          "description": "下のボタンからチケットを作成できます。",
+          "button_label": "チケット作成",
+          "color": "#5865F2"
+        },
+        "deployments": [],
         "deploy": {
           "channel_id": "",
           "message_id": ""
         },
-        "deployments": [],
-        "embed": {
-          "button_label": "チケット作成",
-          "color": "#5865F2",
-          "description": "下のボタンからチケットを作成できます。",
-          "title": "サポート"
-        },
-        "enabled": true,
-        "limits": {
-          "cooldown_minutes": 30,
-          "max_open_per_user": 5
-        },
-        "modal": {
-          "allow_reference_image": true,
-          "body_label": "本文",
-          "enabled": true,
-          "genre_label": "ジャンル",
-          "labels": {
-            "body": "本文",
-            "image": "参考画像URL（任意）",
-            "type": "簡単な内容",
-            "urgency": "緊急度"
-          },
-          "urgency_choices": [
-            "Low",
-            "Med",
-            "High"
-          ],
-          "urgency_label": "緊急度"
-        },
-        "mode": "channel",
-        "name_template": "ticket-{user_id}",
-        "open_message": {
-          "embed": {
-            "color": "#57F287",
-            "description": "種別: **{type}**\n緊急度: **{urgency}**\n\n{body}",
-            "footer": "Ticket System",
-            "title": "✅ チケット作成"
-          },
-          "enabled": true
-        },
-        "panel_id": "default",
-        "panel_name": "質問",
         "parent_category_id": "",
+        "thread_parent_channel_id": "",
+        "types": [
+          "質問",
+          "不具合",
+          "申請",
+          "通報"
+        ],
+        "limits": {
+          "max_open_per_user": 5,
+          "cooldown_minutes": 30
+        },
         "permissions": {
           "staff_role_ids": [],
           "viewer_role_ids": []
         },
-        "reopen_enabled": true,
-        "rules_embed": {
-          "color": "#5865F2",
-          "description": "誹謗中傷は禁止です。\n必要な情報をできるだけ詳しく書いてください。",
-          "enabled": true,
-          "footer": {
-            "icon_url": "",
-            "text": ""
-          },
-          "title": "ルール / 注意事項"
-        },
-        "staff_role_ids": [],
-        "thread_parent_channel_id": "",
-        "types": [
-          "質問"
-        ],
         "form": {
           "enabled": false,
           "fields": []
@@ -150,6 +115,16 @@
           "allow_everyone_mention": false,
           "allowed_role_ids": [],
           "policy": "staff_only"
+        },
+        "close": {
+          "confirm_required": true,
+          "closed_category_id": "",
+          "allow_reopen": true,
+          "delete_after_days": 14
+        },
+        "auto_delete": {
+          "enabled": false,
+          "inactive_minutes": 0
         }
       }
     ],
@@ -195,10 +170,6 @@
         "vc": true,
         "overall": true
       }
-    },
-    "leveling_enabled": true,
-    "text_leaderboard_enabled": true,
-    "text_leaderboard_window": "7d",
-    "level_roles": []
+    }
   }
 }
