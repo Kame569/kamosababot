@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card pad">
+  <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center">
+    <div>
+      <div style="font-size:20px;font-weight:900">チケットログ</div>
+      <div style="margin-top:6px;color:var(--muted);font-size:12px">ログがあるチケットのみ表示します。</div>
+    </div>
+    <div class="pill">count: {{ tickets|length }}</div>
+  </div>
+</div>
+
+<div class="grid" style="margin-top:16px">
+  <div class="col-12">
+    <div class="card pad">
+      {% if tickets|length == 0 %}
+        <div style="color:var(--muted)">ログがまだありません（data/tickets/{{ guild.id }}/index.json が空です）。</div>
+      {% else %}
+        <div style="display:flex;flex-direction:column;gap:10px">
+          {% for t in tickets %}
+            <div class="card pad" style="background:rgba(0,0,0,.18)">
+              <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center">
+                <div>
+                  <div style="font-weight:900">{{ t.title or ("Ticket " ~ t.ticket_id) }}</div>
+                  <div style="color:var(--muted);font-size:12px;margin-top:6px">
+                    作成: {{ t.created_at or "" }} / status: <span class="pill">{{ t.status or "unknown" }}</span>
+                  </div>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap">
+                  <a class="btn primary" href="/guild/{{ guild.id }}/tickets/{{ t.ticket_id }}">閲覧</a>
+                  <a class="btn" href="/guild/{{ guild.id }}/tickets/{{ t.ticket_id }}/download">DL(.html)</a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

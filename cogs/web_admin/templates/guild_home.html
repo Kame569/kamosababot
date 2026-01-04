@@ -1,56 +1,68 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="page-header">
-  <div>
-    <h1 class="page-title">概要</h1>
-    <p class="page-desc">サーバー状況と直近の統計です。</p>
+<div class="card pad">
+  <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center">
+    <div>
+      <div style="font-size:20px;font-weight:900">概要</div>
+      <div style="margin-top:6px;color:var(--muted);font-size:12px">{{ guild.name if guild else "" }}</div>
+    </div>
+    <div class="pill">Guild ID: {{ guild.id if guild else "" }}</div>
   </div>
 </div>
 
-<div class="glass-card">
-  <div class="form-grid">
-    <div class="field half">
-      <div style="font-weight:900;">合計メンバー</div>
-      <div style="font-size:28px; font-weight:900; margin-top:6px;">{{ guild.member_count }}</div>
-    </div>
-    <div class="field half">
-      <div style="font-weight:900;">今日のメッセージ</div>
-      <div style="font-size:28px; font-weight:900; margin-top:6px;">{{ stats.messages[-1] if stats.messages else 0 }}</div>
+<div class="grid" style="margin-top:16px">
+  <div class="col-6">
+    <div class="card pad">
+      <div class="pill">💬 メッセージ（今日）</div>
+      <div style="font-size:28px;font-weight:900;margin-top:10px">{{ stats.messages[-1] }}</div>
+      <div style="color:var(--muted);font-size:12px;margin-top:6px">直近7日分のカウント</div>
     </div>
   </div>
-</div>
 
-<div class="glass-card chart-card">
-  <div style="font-weight:900; margin-bottom:10px;">メッセージ送信履歴（7日）</div>
-  <div class="chart-wrap">
-    <canvas id="msgChart"></canvas>
+  <div class="col-6">
+    <div class="card pad">
+      <div class="pill">👥 メンバー</div>
+      <div style="font-size:28px;font-weight:900;margin-top:10px">{{ guild.member_count if guild else 0 }}</div>
+      <div style="color:var(--muted);font-size:12px;margin-top:6px">Discord側の値</div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card pad">
+      <div style="font-weight:900">メッセージ送信履歴</div>
+      <div style="margin-top:10px">
+        <canvas id="msgChart"></canvas>
+      </div>
+    </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const ctx = document.getElementById('msgChart').getContext('2d');
-new Chart(ctx, {
-  type: 'line',
-  data: {
-    labels: {{ stats.dates | tojson }},
-    datasets: [{
-      label: 'Messages',
-      data: {{ stats.messages | tojson }},
-      fill: true,
-      tension: 0.35
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: {
-      y: { beginAtZero: true }
+(function(){
+  const ctx = document.getElementById('msgChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: {{ stats.dates | tojson }},
+      datasets: [{
+        label: 'Messages',
+        data: {{ stats.messages | tojson }},
+        fill: true,
+        tension: 0.35
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display:false } },
+        y: { beginAtZero: true }
+      }
     }
-  }
-});
+  });
+})();
 </script>
 
 {% endblock %}

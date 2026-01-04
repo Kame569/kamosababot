@@ -1,39 +1,125 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h1>Join / Leave 設定</h1>
+<input type="hidden" id="gid" value="{{ guild.id }}" />
+<script id="cfg-json" type="application/json">{{ cfg|tojson }}</script>
 
-<div class="glass-card">
-  <label>有効化</label>
-  <input id="jl_enabled" type="checkbox" {% if cfg.jl.enabled %}checked{% endif %}>
-
-  <label>Join チャンネル</label>
-  <div class="select-wrap">
-    <select id="jl_channel_join" class="select">
-      <option value="">(未指定)</option>
-      {% for ch in channels %}
-        <option value="{{ ch.id }}" {% if cfg.jl.channels.join|string == ch.id %}selected{% endif %}>#{{ ch.name }}</option>
-      {% endfor %}
-    </select>
-    <span class="chev">▾</span>
-  </div>
-
-  <label>Leave チャンネル</label>
-  <div class="select-wrap">
-    <select id="jl_channel_leave" class="select">
-      <option value="">(未指定)</option>
-      {% for ch in channels %}
-        <option value="{{ ch.id }}" {% if cfg.jl.channels.leave|string == ch.id %}selected{% endif %}>#{{ ch.name }}</option>
-      {% endfor %}
-    </select>
-    <span class="chev">▾</span>
-  </div>
-
-  <div class="actions">
-    <button class="btn primary" onclick="jlSave('{{ guild.id }}')">保存</button>
+<div class="card pad">
+  <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center">
+    <div>
+      <div style="font-size:20px;font-weight:900">Join / Leave 設定</div>
+      <div style="margin-top:6px;color:var(--muted);font-size:12px">Embedのみで通知内容を編集できます。</div>
+    </div>
+    <div class="row" style="justify-content:flex-end">
+      <div class="pill">有効</div>
+      <label class="switch">
+        <input id="jl_enabled" type="checkbox" {% if cfg.jl.enabled %}checked{% endif %}>
+        <span class="slider"></span>
+      </label>
+      <button class="btn primary" onclick="jlSave('{{ guild.id }}')">保存</button>
+    </div>
   </div>
 </div>
 
-<script id="cfg-json" type="application/json">{{ cfg | tojson }}</script>
+<div class="grid" style="margin-top:16px">
+  <div class="col-12">
+    <div class="card pad">
+      <div style="font-weight:900;margin-bottom:10px">通知チャンネル</div>
+      <div class="row">
+        <div class="field">
+          <label>Join 通知チャンネル</label>
+          <div class="select-wrap">
+            <select class="select" id="jl_channel_join">
+              <option value="">未設定</option>
+              {% for ch in channels %}
+                <option value="{{ ch.id }}" {% if cfg.jl.channels.join == ch.id %}selected{% endif %}>#{{ ch.name }}</option>
+              {% endfor %}
+            </select>
+            <span class="chev">▾</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Leave 通知チャンネル</label>
+          <div class="select-wrap">
+            <select class="select" id="jl_channel_leave">
+              <option value="">未設定</option>
+              {% for ch in channels %}
+                <option value="{{ ch.id }}" {% if cfg.jl.channels.leave == ch.id %}selected{% endif %}>#{{ ch.name }}</option>
+              {% endfor %}
+            </select>
+            <span class="chev">▾</span>
+          </div>
+        </div>
+      </div>
+      <div class="help">※ チャンネル未設定の場合は送信しません。</div>
+    </div>
+  </div>
+
+  <div class="col-6">
+    <div class="card pad">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+        <div style="font-weight:900">Join Embed</div>
+        <div class="pill">preview</div>
+      </div>
+
+      <div class="field" style="margin-top:14px">
+        <label>タイトル</label>
+        <input class="input" id="jl_join_title" value="{{ cfg.jl.join_embed.title }}">
+      </div>
+
+      <div class="field">
+        <label>本文</label>
+        <textarea id="jl_join_desc">{{ cfg.jl.join_embed.description }}</textarea>
+        <div class="help">例: {user} / {user_id} / {created_at} など（Bot側で置換）</div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>色（#RRGGBB）</label>
+          <input class="input" id="jl_join_color" value="{{ cfg.jl.join_embed.color }}">
+        </div>
+        <div class="field">
+          <label>フッター</label>
+          <input class="input" id="jl_join_footer" value="{{ cfg.jl.join_embed.footer }}">
+        </div>
+      </div>
+
+      <div id="jl_preview_join" class="card pad" style="margin-top:14px"></div>
+    </div>
+  </div>
+
+  <div class="col-6">
+    <div class="card pad">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+        <div style="font-weight:900">Leave Embed</div>
+        <div class="pill">preview</div>
+      </div>
+
+      <div class="field" style="margin-top:14px">
+        <label>タイトル</label>
+        <input class="input" id="jl_leave_title" value="{{ cfg.jl.leave_embed.title }}">
+      </div>
+
+      <div class="field">
+        <label>本文</label>
+        <textarea id="jl_leave_desc">{{ cfg.jl.leave_embed.description }}</textarea>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>色（#RRGGBB）</label>
+          <input class="input" id="jl_leave_color" value="{{ cfg.jl.leave_embed.color }}">
+        </div>
+        <div class="field">
+          <label>フッター</label>
+          <input class="input" id="jl_leave_footer" value="{{ cfg.jl.leave_embed.footer }}">
+        </div>
+      </div>
+
+      <div id="jl_preview_leave" class="card pad" style="margin-top:14px"></div>
+    </div>
+  </div>
+</div>
 
 {% endblock %}

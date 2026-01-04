@@ -1,47 +1,113 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h1>Ranking 設定</h1>
+<input type="hidden" id="gid" value="{{ guild.id }}" />
+<script id="cfg-json" type="application/json">{{ cfg|tojson }}</script>
 
-<div class="glass-card">
-  <label>有効化</label>
-  <input id="rank_enabled" type="checkbox" {% if cfg.rank.enabled %}checked{% endif %}>
-
-  <label>Embed タイトル</label>
-  <input id="rank_title" class="input" value="{{ cfg.rank.embed.title }}">
-
-  <label>Embed 説明</label>
-  <textarea id="rank_desc" class="textarea" rows="6">{{ cfg.rank.embed.description }}</textarea>
-
-  <label>カラー（#RRGGBB）</label>
-  <input id="rank_color" class="input" value="{{ cfg.rank.embed.color }}">
-
-  <div class="divider"></div>
-
-  <h3>Leaderboard</h3>
-  <label>有効化</label>
-  <input id="lb_enabled" type="checkbox" {% if cfg.rank.leaderboard.enabled %}checked{% endif %}>
-
-  <label>設置先チャンネル</label>
-  <div class="select-wrap">
-    <select id="lb_channel" class="select">
-      <option value="">(未指定)</option>
-      {% for ch in channels %}
-        <option value="{{ ch.id }}" {% if cfg.rank.leaderboard.channel_id|string == ch.id %}selected{% endif %}>#{{ ch.name }}</option>
-      {% endfor %}
-    </select>
-    <span class="chev">▾</span>
-  </div>
-
-  <label>更新間隔（分）</label>
-  <input id="lb_interval" type="number" class="input" min="1" value="{{ cfg.rank.leaderboard.interval_minutes }}">
-
-  <div class="actions">
-    <button class="btn primary" onclick="rankSave('{{ guild.id }}')">保存</button>
-    <button class="btn" onclick="rankDeploy('{{ guild.id }}')">Discordに設置</button>
+<div class="card pad">
+  <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center">
+    <div>
+      <div style="font-size:20px;font-weight:900">Ranking 設定</div>
+      <div style="margin-top:6px;color:var(--muted);font-size:12px">/rank Embed と Leaderboard を管理します。</div>
+    </div>
+    <div class="row" style="justify-content:flex-end">
+      <div class="pill">有効</div>
+      <label class="switch">
+        <input id="rank_enabled" type="checkbox" {% if cfg.rank.enabled %}checked{% endif %}>
+        <span class="slider"></span>
+      </label>
+      <button class="btn primary" onclick="rankSave('{{ guild.id }}')">保存</button>
+    </div>
   </div>
 </div>
 
-<script id="cfg-json" type="application/json">{{ cfg | tojson }}</script>
+<div class="grid" style="margin-top:16px">
+  <div class="col-6">
+    <div class="card pad">
+      <div style="font-weight:900;margin-bottom:10px">/rank Embed</div>
+      <div class="field">
+        <label>タイトル</label>
+        <input class="input" id="rank_title" value="{{ cfg.rank.embed.title }}">
+      </div>
+      <div class="field">
+        <label>本文</label>
+        <textarea id="rank_desc">{{ cfg.rank.embed.description }}</textarea>
+        <div class="help">変数: {level} {xp} {next} {messages} {username} など（Bot側で置換）</div>
+      </div>
+      <div class="field">
+        <label>色（#RRGGBB）</label>
+        <input class="input" id="rank_color" value="{{ cfg.rank.embed.color }}">
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6">
+    <div class="card pad">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+        <div style="font-weight:900">Leaderboard</div>
+        <button class="btn primary" onclick="rankDeploy('{{ guild.id }}')">Discordに設置</button>
+      </div>
+
+      <div class="row" style="margin-top:12px">
+        <div class="pill">有効</div>
+        <label class="switch">
+          <input id="lb_enabled" type="checkbox" {% if cfg.rank.leaderboard.enabled %}checked{% endif %}>
+          <span class="slider"></span>
+        </label>
+
+        <div class="pill">メンション</div>
+        <label class="switch">
+          <input id="lb_mention" type="checkbox" {% if cfg.rank.leaderboard.mention %}checked{% endif %}>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="field" style="margin-top:12px">
+        <label>設置先チャンネル</label>
+        <div class="select-wrap">
+          <select class="select" id="lb_channel">
+            <option value="">未設定</option>
+            {% for ch in channels %}
+              <option value="{{ ch.id }}" {% if cfg.rank.leaderboard.channel_id == ch.id %}selected{% endif %}>#{{ ch.name }}</option>
+            {% endfor %}
+          </select>
+          <span class="chev">▾</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>更新間隔（分）</label>
+        <input class="input" id="lb_interval" value="{{ cfg.rank.leaderboard.interval_minutes }}">
+      </div>
+
+      <div class="card pad" style="margin-top:12px">
+        <div style="font-weight:900;margin-bottom:10px">表示対象</div>
+
+        <div class="row" style="align-items:center">
+          <div class="pill">テキスト</div>
+          <label class="switch">
+            <input id="lb_show_text" type="checkbox" {% if cfg.rank.leaderboard.show.text %}checked{% endif %}>
+            <span class="slider"></span>
+          </label>
+
+          <div class="pill">VC</div>
+          <label class="switch">
+            <input id="lb_show_vc" type="checkbox" {% if cfg.rank.leaderboard.show.vc %}checked{% endif %}>
+            <span class="slider"></span>
+          </label>
+
+          <div class="pill">総合</div>
+          <label class="switch">
+            <input id="lb_show_overall" type="checkbox" {% if cfg.rank.leaderboard.show.overall %}checked{% endif %}>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="help">※ Embed に最終更新日時を表示します（Bot側で自動挿入）。</div>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 {% endblock %}

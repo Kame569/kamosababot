@@ -10,11 +10,8 @@
     "join_embed": {
       "title": "Welcome",
       "description": "",
-      "color": 5763719,
-      "footer": {
-        "text": "",
-        "icon_url": ""
-      },
+      "color": "#5865F2",
+      "footer": "{'text': '', 'icon_url': ''}",
       "author": {
         "icon_url": "",
         "name": ""
@@ -25,11 +22,8 @@
     "leave_embed": {
       "title": "Goodbye",
       "description": "",
-      "color": 15548997,
-      "footer": {
-        "text": "",
-        "icon_url": ""
-      },
+      "color": "#ED4245",
+      "footer": "{'text': '', 'icon_url': ''}",
       "author": {
         "icon_url": "",
         "name": ""
@@ -426,7 +420,13 @@
       "enabled": true,
       "channel_id": "1457180028792996094",
       "interval_minutes": 10,
-      "message_id": "1457322297185538120"
+      "message_id": "1457322297185538120",
+      "mention": false,
+      "show": {
+        "overall": true,
+        "text": true,
+        "vc": true
+      }
     },
     "formula": "level * 100",
     "level_roles": [],

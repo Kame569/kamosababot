@@ -1,59 +1,41 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Kamosaba Panel</title>
-
-  <link rel="stylesheet" href="/static/app.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  {% block head %}{% endblock %}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bot Panel</title>
+  <link rel="stylesheet" href="/static/app.css" />
 </head>
-
 <body>
-  <div class="topbar">
-    <div class="topbar-inner">
-      <button class="icon-btn" onclick="document.body.classList.toggle('sidebar-open')">
-        <i class="fa-solid fa-bars"></i>
-      </button>
-      <div class="topbar-title">
-        <span class="mini-badge"></span>
-        <span>Kamosaba Panel</span>
-      </div>
-    </div>
-  </div>
-  <div class="backdrop" onclick="document.body.classList.remove('sidebar-open')"></div>
-
-  <div class="app">
+  <div class="layout">
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-badge"></div>
+        <div class="dot"></div>
         <div>
-          <div class="brand-title">Kamosaba</div>
-          <span class="brand-sub">Web Admin Panel</span>
+          <div class="name">Kamosaba Panel</div>
+          <div style="font-size:12px;opacity:.72;margin-top:2px">Discord-style Admin</div>
         </div>
       </div>
 
       <nav class="nav">
-        <a href="/"><i class="fa-solid fa-house"></i> サーバー一覧</a>
+        <a href="/">🏠 サーバー一覧</a>
+
         {% if guild %}
-          <div class="nav-title">MODULES</div>
-          <a href="/guild/{{ guild.id }}"><i class="fa-solid fa-chart-line"></i> 概要</a>
-          <a href="/guild/{{ guild.id }}/settings/jl"><i class="fa-solid fa-door-open"></i> Join/Leave</a>
-          <a href="/guild/{{ guild.id }}/settings/ticket"><i class="fa-solid fa-ticket"></i> Ticket System</a>
-          <a href="/guild/{{ guild.id }}/settings/rank"><i class="fa-solid fa-trophy"></i> Ranking</a>
+          <div class="group-title">GUILD</div>
+          <a href="/guild/{{ guild.id }}">📊 概要</a>
+          <a href="/guild/{{ guild.id }}/settings/jl">🚪 Join/Leave</a>
+          <a href="/guild/{{ guild.id }}/settings/ticket">🎫 Ticket</a>
+          <a href="/guild/{{ guild.id }}/settings/rank">🏆 Ranking</a>
+          <a href="/guild/{{ guild.id }}/tickets">🧾 チケットログ</a>
         {% endif %}
       </nav>
     </aside>
 
-    <main class="content">
-      <div class="container">
-        {% block content %}{% endblock %}
-      </div>
+    <main class="main">
+      {% block content %}{% endblock %}
     </main>
   </div>
 
   <script src="/static/app.js"></script>
-  {% block script %}{% endblock %}
 </body>
 </html>
